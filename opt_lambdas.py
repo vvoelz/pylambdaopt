@@ -1,11 +1,11 @@
 import os, sys
 import numpy as np
+
 import scipy
 from scipy import stats
 from scipy.interpolate import UnivariateSpline
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-
 
 ### Functions ###
 
@@ -41,7 +41,6 @@ def get_coul_vdW_lambdas(mdpfile):
 
     return coul_lambdas, vdw_lambdas
 
-
 def get_fep_lambdas(mdpfile):
     """Given an *.mdp file as input, extract the values of fep-lambdas
     RETURNS
@@ -62,7 +61,6 @@ def get_fep_lambdas(mdpfile):
             fep_lambdas = np.array([float(s) for s in fep_string.split()])
             
     return fep_lambdas
-
 
 def get_dhdl_data(dhdl_xvgfile, verbose=True):
     r"""Read and parse the information in the dhdl file.
@@ -145,6 +143,7 @@ def get_dhdl_data(dhdl_xvgfile, verbose=True):
 
     return time_in_ps, thermo_states, dhdl
 
+
 def estimate_sigmas(dhdl, thermo_states, plot_data=True):
     """Using as input the Delta_U_ij energies from the dhdl array, 
     estimate the standard deviations P(U_{i-->i+1}) for neighboring ensembles.
@@ -188,8 +187,8 @@ def estimate_sigmas(dhdl, thermo_states, plot_data=True):
 
     return np.array(sigmas)
 
-
-def opt_lambdas(sigmas, cal_type, make_plots=False):   #cal_type = 'absolute'(having coul and vdw) or 'relative' (only having fep lambdas)
+def opt_lambdas(sigmas, cal_type, nsteps =100000, tol =1e-7, alpha =1e-5, 
+                print_every =250, make_plots=False):   #cal_type = 'absolute'(having coul and vdw) or 'relative' (only having fep lambdas)
 
     print('sigmas', sigmas)
                   
@@ -236,14 +235,14 @@ def opt_lambdas(sigmas, cal_type, make_plots=False):   #cal_type = 'absolute'(ha
                          
                 
     # Let's try a steepest descent algorithm: run the algorithm some fixed number of steps, or until some tolerance is reached
-    nsteps = 100000
-    tol = 1e-7  # stop if the lambdas dont change within this tolerance
+    #nsteps = 100000
+    #tol = 1e-7  # stop if the lambdas dont change within this tolerance
 
-    alpha = 1e-5  # gradient descent step size
+    #alpha = 1e-5  # gradient descent step size
     max_del_lambda = 0.0001   # the minimization step limited to this as a maximum change
 
     VERBOSE = False
-    print_every = 250
+    #print_every = 250
 
     nlambdas = len(lambda_values)
     print('lambda_values', lambda_values)
@@ -340,7 +339,6 @@ def opt_lambdas(sigmas, cal_type, make_plots=False):   #cal_type = 'absolute'(ha
         print (outstring)
     
 
-
 ######
 ### Main ###
 
@@ -394,4 +392,8 @@ if __name__ == '__main__':
     sigmas = estimate_sigmas(dhdl, thermo_states, plot_data=False)
     print (sigmas)
 
-    new = opt_lambdas(sigmas, 'relative', make_plots=False)
+    new = opt_lambdas(sigmas, cal_type, make_plots=False)
+
+    ### can modify nsteps, tol, alpha, print_every here, otherwise will use default values
+    #new = opt_lambdas(sigmas, cal_type, make_plots=True, nsteps =1000000, tol =1e-9, alpha =1e-5, print_every =250) 
+
