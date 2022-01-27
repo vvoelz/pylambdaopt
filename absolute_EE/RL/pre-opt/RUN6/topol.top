@@ -1,0 +1,51 @@
+; Include forcefield parameters
+#include "amber99sb-ildn.ff/forcefield.itp"
+
+[ atomtypes ]
+;name   bond_type     mass     charge   ptype   sigma         epsilon       Amb
+ ca       ca          0.00000  0.00000   A     3.39967e-01   3.59824e-01 ; 1.91  0.0860
+ na       na          0.00000  0.00000   A     3.25000e-01   7.11280e-01 ; 1.82  0.1700
+ os       os          0.00000  0.00000   A     3.00001e-01   7.11280e-01 ; 1.68  0.1700
+ ne       ne          0.00000  0.00000   A     3.25000e-01   7.11280e-01 ; 1.82  0.1700
+ nc       nc          0.00000  0.00000   A     3.25000e-01   7.11280e-01 ; 1.82  0.1700
+ c3       c3          0.00000  0.00000   A     3.39967e-01   4.57730e-01 ; 1.91  0.1094
+ cc       cc          0.00000  0.00000   A     3.39967e-01   3.59824e-01 ; 1.91  0.0860
+ c2       c2          0.00000  0.00000   A     3.39967e-01   3.59824e-01 ; 1.91  0.0860
+ cf       cf          0.00000  0.00000   A     3.39967e-01   3.59824e-01 ; 1.91  0.0860
+ br       br          0.00000  0.00000   A     3.59923e-01   1.75728e+00 ; 2.02  0.4200
+ ha       ha          0.00000  0.00000   A     2.59964e-01   6.27600e-02 ; 1.46  0.0150
+ h1       h1          0.00000  0.00000   A     2.47135e-01   6.56888e-02 ; 1.39  0.0157
+ h5       h5          0.00000  0.00000   A     2.42146e-01   6.27600e-02 ; 1.36  0.0150
+ hn       hn          0.00000  0.00000   A     1.06908e-01   6.56888e-02 ; 0.60  0.0157
+ DUM      DUM         0.00000  0.00000   A     0.000000      0.000000    ; 0.00  0.0000
+
+; Included topologies
+
+#include "MDM2.itp"
+#include "REC_res.itp"
+#include "LIG.itp"
+
+; Include water topology
+#include "amber99sb-ildn.ff/tip3p.itp"
+
+#ifdef POSRES_WATER
+[ position_restraints ]
+;  i funct       fcx        fcy        fcz
+   1    1       1000       1000       1000
+#endif
+
+[ system ]
+; Name
+LIG_MDM2_4LWU in water
+
+; Include topology for ions
+#include "amber99sb-ildn.ff/ions.itp" in water
+#include "DUM.itp" in water
+
+[ molecules ]
+MDM2     1
+LIG      1
+SOL      6352
+NA       13
+CL       17
+DUM      3

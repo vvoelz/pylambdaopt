@@ -1,0 +1,9 @@
+;  dumb
+
+[ moleculetype ]
+;name            nrexcl
+ DUM              3
+
+[ atoms ]
+;   nr  type  resi  res  atom  cgnr     charge      mass       ; qtot   bond_type
+     1   DUM     1  DUM   DUM     1   0.000000  1.000000       ; qtot 0.0000
