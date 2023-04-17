@@ -273,6 +273,7 @@ if __name__ == '__main__':
               
     EXAMPLE
     Try this:
+        $ cd ../examples
         $ python ../scripts/optimize_coul_vdw_lambdas.py Sulfamethazine_tau0_0_water/ee.mdp Sulfamethazine_tau0_0_water/ee.dhdl.xvg opt Sulfamethazine_tau0_0_water
     """        
 
