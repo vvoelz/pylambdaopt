@@ -209,9 +209,13 @@ def estimate_sigmas(dhdl, thermo_states, plot_data=True):
        
     for j in range(nlambdas-1):
     
-        ##transitions from state 0 to 1 or 1 to 2, or 2 to 3 .... 
-        Ind_i = (thermo_states == j)
-        delta_u_ij = dhdl[Ind_i, j+1]       ##only for neighbored ensembles
+        ## transitions from state 0 to 1 or 1 to 2, or 2 to 3 .... 
+
+        Ind = (thermo_states == j)
+        delta_u_ij = dhdl[Ind, j+1]       # forward delta_u only for neighbored ensembles
+
+        Ind2 = (thermo_states == (j+1))
+        delta_u_ji = dhdl[Ind2, j]       # forward delta_u only for neighbored ensembles
 
         #print ('lambda index=', j)
         #print ('delta_u_ij.shape=', delta_u_ij.shape)
@@ -221,9 +225,13 @@ def estimate_sigmas(dhdl, thermo_states, plot_data=True):
         ### VAV debug
         print('Are any delta_u_ij values nan?')
         print(delta_u_ij)
+        print('Are any delta_u_ji values nan?')
+        print(delta_u_ji)
 
-        mu, sigma = scipy.stats.norm.fit(delta_u_ij)
-        #print (mu, sigma)
+        mu_ij, sigma_ij = scipy.stats.norm.fit(delta_u_ij)
+        mu_ji, sigma_ji = scipy.stats.norm.fit(delta_u_ji) 
+        
+        sigma = ( sigma_ij + sigma_ji ) / 2.0
         sigmas.append(sigma)
 
         delta_u_bins = np.arange(-15., 15., 0.2)
