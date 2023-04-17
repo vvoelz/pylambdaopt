@@ -1,9 +1,8 @@
 # pylambdaopt
+
 Python scripts and module to optimize lambda values in FEP calculations
 
-SZ: -> opt_lambdas.py is a 'robust' script for optimizing fep lambdas or coul+vdw lambdas
+`scripts` - Current scripts
 
--> opt_lambdas.py is same as opt_lambdas.ipynb
+`SZ_Scripts` -- Si Zhang scripts from 2021
 
-Try this:
-python opt_lambdas.py relative_EE/example_data/ee_Si.mdp relative_EE/example_data/equil_1.xvg  relative
