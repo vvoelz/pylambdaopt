@@ -1,6 +1,6 @@
 # README
 
-## Descriptioin 
+## Description 
 
 These are GROMACS .mdp and dhdl.xvg files for a R3E (Arg --> Glu) relative FEP transformation
 of miniprotein A8 in solution.
