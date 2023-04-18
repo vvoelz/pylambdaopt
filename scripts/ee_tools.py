@@ -26,11 +26,13 @@ def get_fep_lambdas(mdpfile):
    
     fep_lambdas = None
     for line in lines:
-        if (line.count('fep-lambdas') > 0) | (line.count('fep_lambdas') > 0):
-          fep_string = line.split('=')[1].strip() 
-          #print ('fep_string=', fep_string)
-          fep_lambdas = np.array([float(s) for s in fep_string.split()])
-          #print ('fep_lambdas=', fep_lambdas)
+        fields = line.strip().split()
+        if len(fields) > 0:
+            if (fields[0].count('fep-lambdas') > 0) | (fields[0].count('fep_lambdas') > 0):
+                fep_string = line.split('=')[1].strip() 
+                #print ('fep_string=', fep_string)
+                fep_lambdas = np.array([float(s) for s in fep_string.split()])
+                #print ('fep_lambdas=', fep_lambdas)
 
     return fep_lambdas
 
