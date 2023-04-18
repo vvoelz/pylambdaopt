@@ -247,18 +247,14 @@ def write_optimized_fep_mdp(new_fep_lambdas, input_mdpfile, output_mdpfile):
     lines = fin.readlines()
     fin.close()
 
-    # Find the 'fep-lambdas' line 
-    for line in lines:
-        if (line.count('fep-lambdas') > 0) | (line.count('fep_lambdas') > 0):
-
-    ## fep_lambdas_string for the mdp file
+    ## Format the new fep_lambdas_string for the mdp file
     fep_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_fep_lambdas])
     fep_lambdas_line = f'fep-lambdas         = {fep_lambdas_string}\n'
 
     # Find the 'fep-lambdas' line 
     for i in range(len(lines)):
         line = lines[i]
-        fields = lines.strip().split()
+        fields = line.strip().split()
         if len(fields) > 0:
             if (fields[0].count('fep-lambdas') > 0) | (fields[0].count('fep_lambdas') > 0):
                 lines[i] = fep_lambdas_line
