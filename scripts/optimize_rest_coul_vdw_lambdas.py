@@ -302,15 +302,19 @@ if __name__ == '__main__':
     # print out new coul_lambdas, vdw_lambdas to std output, formatted like an mdp file
     print('### Optimized lambda values ###')
     print('')
-    ## rest_lambdas_string
-    rest_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_rest_lambdas])
-    print(f'coul-lambdas         = {coul_lambdas_string}')
+
     ## coul_lambdas_string
     coul_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_coul_lambdas])
     print(f'coul-lambdas         = {coul_lambdas_string}')
+
     ## vdw_lambdas_string
     vdw_lambdas_string    = ' '.join(['%2.5f'%lam for lam in new_vdw_lambdas])
     print(f'vdw-lambdas         = {vdw_lambdas_string}')
+
+    ## rest_lambdas_string
+    rest_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_rest_lambdas])
+    print(f'restraint-lambdas         = {rest_lambdas_string}')
+
     print()
 
     new_rest_npyfile = os.path.join(outdir, f'{outname}_new_rest_lambdas.npy')
