@@ -16,19 +16,20 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
         to minimize the total variance in P(\Delta u_ij) for neighboring thermodynamic ensembles
 
     RETURNS
-        coul-lambdas, vdw-lambdas   (their optimized values)
+        new_rest_lambdas, new_coul_lambdas, new_vdw_lambdas   (their optimized values)
 
     WARNING
-        This script *assumes* that the coul and vdw lambda values
-        are changed sequentially, i.e. First the coul lambda goes from 0.0 to 1.0, then the vdw
-        lambda goes from 0.0 to 1.0, ideally with one of the intermediates having coul-lambda = 1.0, vdw-lambda = 0.0. 
+        This script *assumes* that the rest, coul and vdw lambda values
+        are changed sequentially, in that order!  i.e. First the rest is turned on from 0.0 to 1.0, then electrostates are turned off, 
+        with coul lambda going from 0.0 to 1.0, then the vdw are turned off, with lambda going from 0.0 to 1.0. 
+        Ideally, one intermediates has coul-lambda = 1.0, vdw-lambda = 0.0. 
     """
 
 
-    coul_lambdas, vdw_lambdas = get_coul_vdw_lambdas(mdpfile)
+    rest_lambdas = coul_lambdas, vdw_lambdas = get_rest_coul_vdw_lambdas(mdpfile)
 
-    # We map the two sets of values \in [0,1] to interval [0,2]
-    lambdas = coul_lambdas + vdw_lambdas
+    # We map the three sets of values \in [0,1] to interval [0,2]
+    lambdas = rest_lambdas + coul_lambdas + vdw_lambdas
     if verbose:
         print('lambdas', lambdas)
         print('lambdas.shape', lambdas.shape)
@@ -244,10 +245,11 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
             print(f'Wrote: {old_vs_new_lambdas_pngfile}')
 
     # map the sum of coul-lambdas and vdw-lambdas back to their [0,1] ranges
-    new_coul_lambdas = np.minimum(new_lambdas, 1.0)
-    new_vdw_lambdas  = np.maximum(new_lambdas, 1.0) - 1.0
+    new_rest_lambdas = np.minimum(new_lambdas, 1.0) 
+    new_coul_lambdas = np.minimum(new_lambdas, 1.0) - 1.0
+    new_vdw_lambdas  = np.maximum(new_lambdas, 1.0) - 2.0
 
-    return new_coul_lambdas, new_vdw_lambdas
+    return new_rest_lambdas, new_coul_lambdas, new_vdw_lambdas
 
 
 ########################
