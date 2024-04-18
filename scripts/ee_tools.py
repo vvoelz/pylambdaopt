@@ -66,6 +66,45 @@ def get_coul_vdw_lambdas(mdpfile):
 
     return coul_lambdas, vdw_lambdas
 
+def get_rest_coul_vdw_lambdas(mdpfile):
+    """Given an *.mdp file as input, extract the values of rest_lambdas, coul_lambdas and vdw_lambdas 
+
+    RETURNS
+    rest_lambdas      - numpy array of restraint-lambdas
+    coul_lambdas      - numpy array of coul-lambdas
+    vdw_lambdas       - numpy array of vdw-lambdas
+
+    """
+    fin = open(mdpfile,'r')
+    lines = fin.readlines()
+    fin.close()
+
+    coul_lambdas = None
+    for line in lines:
+        if (line.count('coul-lambdas') > 0) | (line.count('coul_lambdas') > 0):
+          coul_string = line.split('=')[1].strip()
+          #print ('coul_string=', coul_string)
+          coul_lambdas = np.array([float(s) for s in coul_string.split()])
+          #print ('coul_lambdas=', coul_lambdas)
+
+    vdw_lambdas = None
+    for line in lines:
+        if (line.count('vdw-lambdas') > 0) | (line.count('vdw_lambdas') > 0):
+          vdw_string = line.split('=')[1].strip()
+          #print ('vdw_string=', vdw_string)
+          vdw_lambdas = np.array([float(s) for s in vdw_string.split()])
+          #print ('vdw_lambdas=', vdw_lambdas)
+
+    rest_lambdas = None
+    for line in lines:
+        if (line.count('restraint-lambdas') > 0) | (line.count('restraint_lambdas') > 0):
+          rest_string = line.split('=')[1].strip()
+          #print ('rest_string=', rest_string)
+          rest_lambdas = np.array([float(s) for s in rest_string.split()])
+          #print ('rest_lambdas=', rest_lambdas)
+
+    return rest_lambdads, coul_lambdas, vdw_lambdas
+
 
 def get_dhdl_data(dhdl_xvgfile, verbose=True):
     r"""Read and parse the information in the dhdl file.
