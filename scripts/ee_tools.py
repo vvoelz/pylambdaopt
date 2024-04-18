@@ -103,7 +103,7 @@ def get_rest_coul_vdw_lambdas(mdpfile):
           rest_lambdas = np.array([float(s) for s in rest_string.split()])
           #print ('rest_lambdas=', rest_lambdas)
 
-    return rest_lambdads, coul_lambdas, vdw_lambdas
+    return rest_lambdas, coul_lambdas, vdw_lambdas
 
 
 def get_dhdl_data(dhdl_xvgfile, verbose=True):
