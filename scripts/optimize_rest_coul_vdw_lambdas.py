@@ -28,7 +28,7 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
 
     rest_lambdas, coul_lambdas, vdw_lambdas = get_rest_coul_vdw_lambdas(mdpfile)
 
-    # We map the three sets of values \in [0,1] to interval [0,2]
+    # We map the three sets of values \in [0,1] to interval [0,3]
     lambdas = rest_lambdas + coul_lambdas + vdw_lambdas
     if verbose:
         print('lambdas', lambdas)
@@ -246,8 +246,8 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
 
     # map the sum of coul-lambdas and vdw-lambdas back to their [0,1] ranges
     new_rest_lambdas = np.minimum(new_lambdas, 1.0) 
-    new_coul_lambdas = np.minimum(new_lambdas, 1.0) - 1.0
-    new_vdw_lambdas  = np.maximum(new_lambdas, 1.0) - 2.0
+    new_coul_lambdas = np.maximum(np.minimum(new_lambdas, 2.0), 1.0)   - 1.0
+    new_vdw_lambdas  = np.maximum(new_lambdas, 2.0) - 2.0
 
     return new_rest_lambdas, new_coul_lambdas, new_vdw_lambdas
 
