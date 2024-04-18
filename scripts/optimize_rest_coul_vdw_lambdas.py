@@ -26,7 +26,7 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
     """
 
 
-    rest_lambdas = coul_lambdas, vdw_lambdas = get_rest_coul_vdw_lambdas(mdpfile)
+    rest_lambdas, coul_lambdas, vdw_lambdas = get_rest_coul_vdw_lambdas(mdpfile)
 
     # We map the three sets of values \in [0,1] to interval [0,2]
     lambdas = rest_lambdas + coul_lambdas + vdw_lambdas
