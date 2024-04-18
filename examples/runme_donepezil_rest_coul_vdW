@@ -1,2 +1,2 @@
-python ../scripts/optimize_rest_coul_vdw_lambdas.py donepezil_rest_coul_vdW/ee.mdp donepezil_rest_coul_vdW/ee_test.dhdl.xvg opt donepezil_rest_coul_vdW 
+python ../scripts/optimize_rest_coul_vdw_lambdas.py donepezil_rest_coul_vdW/ee_test.mdp donepezil_rest_coul_vdW/ee_test.dhdl.xvg opt donepezil_rest_coul_vdW 
 
