@@ -239,6 +239,8 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
         plt.ylabel('x values')
         plt.title('new lambdas')
 
+        plt.tight_layout()
+
         if save_plots:
             old_vs_new_lambdas_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_lambdas.png')
             plt.savefig(old_vs_new_lambdas_pngfile)

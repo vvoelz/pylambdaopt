@@ -1,4 +1,4 @@
-import os, sys
+i mport os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 #  %matplotlib inline
@@ -237,6 +237,8 @@ def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots
         plt.xlabel('lambda')
         plt.ylabel('x values')
         plt.title('new lambdas')
+
+        plt.tight_layout()
 
         if save_plots:
             old_vs_new_lambdas_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_lambdas.png')
