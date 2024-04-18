@@ -256,7 +256,7 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_
 
 if __name__ == '__main__':
 
-    usage  = """Usage:    python optimize_fep_lambdas.py mdpfile dhdl_xvgfile outname outdir
+    usage  = """Usage:    python optimize_rest_coul_vdw__lambdas.py mdpfile dhdl_xvgfile outname outdir
 
     DESCRIPTION
         This script will optimize the lambda values for all intermediates
@@ -265,6 +265,7 @@ if __name__ == '__main__':
     OUTPUT
         * A mdpfile-compatible string with new coul-lambdas and vdw-lambdas printed to std output
         * Numpy arrays of the new values will be written to:
+            - [outdir]/[outname]_new_rest_lambdas.py
             - [outdir]/[outname]_new_coul_lambdas.py
             - [outdir]/[outname]_new_vdw_lambdas.py
         * graphs associated with the lambda optimization will be written as images:
@@ -276,7 +277,7 @@ if __name__ == '__main__':
     EXAMPLE
     Try this:
         $ cd ../examples
-        $ python ../scripts/optimize_coul_vdw_lambdas.py Sulfamethazine_tau0_0_water/ee.mdp Sulfamethazine_tau0_0_water/ee.dhdl.xvg opt Sulfamethazine_tau0_0_water
+        $ python ../scripts/optimize_rest_coul_vdw_lambdas.py donepezil_rest_coul_vdW/ee.mdp donepezil_rest_coul_vdW/ee_test.dhdl.xvg opt donepezil_rest_coul_vdW
     """        
 
     # Parse input
@@ -295,12 +296,15 @@ if __name__ == '__main__':
     assert os.path.exists(outdir)
 
     # Optimize the lambdas
-    new_coul_lambdas, new_vdw_lambdas = optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, save_plots=True, verbose=False)
+    new_rest_lambdas, new_coul_lambdas, new_vdw_lambdas = optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, save_plots=True, verbose=False)
 
 
     # print out new coul_lambdas, vdw_lambdas to std output, formatted like an mdp file
     print('### Optimized lambda values ###')
     print('')
+    ## rest_lambdas_string
+    rest_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_rest_lambdas])
+    print(f'coul-lambdas         = {coul_lambdas_string}')
     ## coul_lambdas_string
     coul_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_coul_lambdas])
     print(f'coul-lambdas         = {coul_lambdas_string}')
@@ -309,6 +313,9 @@ if __name__ == '__main__':
     print(f'vdw-lambdas         = {vdw_lambdas_string}')
     print()
 
+    new_rest_npyfile = os.path.join(outdir, f'{outname}_new_rest_lambdas.npy')
+    np.save(new_rest_npyfile, new_rest_lambdas)
+    print(f'Wrote: {new_rest_npyfile}')
 
     new_coul_npyfile = os.path.join(outdir, f'{outname}_new_coul_lambdas.npy')
     np.save(new_coul_npyfile, new_coul_lambdas)
@@ -323,6 +330,7 @@ if __name__ == '__main__':
     e = ExpandedPrep(ligand_only=True, couple_moltype = 'LIG',
                      nsteps=5000000,  # 10000 ps = 10 ns simulation
                      nstexpanded=250,  # 500 fs = 0.5 ps per swap and dhdl snapshot (20000 total energy snaps in the dhdl file)
+                     rest_lamdas=new_rest_lambdas,
                      coul_lambdas=new_coul_lambdas, 
                      vdw_lambdas=new_vdw_lambdas) 
     ee_mdpfile = os.path.join(outdir, f'{outname}_ee_optimized.mdp')
