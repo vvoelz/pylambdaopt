@@ -336,9 +336,11 @@ if __name__ == '__main__':
     e = ExpandedPrep(ligand_only=True, couple_moltype = 'LIG',
                      nsteps=5000000,  # 10000 ps = 10 ns simulation
                      nstexpanded=250,  # 500 fs = 0.5 ps per swap and dhdl snapshot (20000 total energy snaps in the dhdl file)
+                     fep_lambdas=np.zeros(len(new_rest_lambdas)),   # This MUST be specified because nlambdas determined from it!
                      rest_lambdas=new_rest_lambdas,
                      coul_lambdas=new_coul_lambdas, 
-                     vdw_lambdas=new_vdw_lambdas) 
+                     vdw_lambdas=new_vdw_lambdas,
+                     init_lambda_weights=np.zeros(len(new_rest_lambdas))  )
     ee_mdpfile = os.path.join(outdir, f'{outname}_ee_optimized.mdp')
     e.write_to_filename(ee_mdpfile)
     print(f'Wrote: {ee_mdpfile}')
