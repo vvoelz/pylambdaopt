@@ -137,6 +137,8 @@ def get_dhdl_data(dhdl_xvgfile, verbose=True):
 
     **NOTE 2**: if NPT, there will be an extra line for pV!
 
+    **NOTE 3**: VAV: Apr 20, 2024
+    If the file is rest->coul->vdW, then there will be an additional rest line
 
     coul/vdw:
 
