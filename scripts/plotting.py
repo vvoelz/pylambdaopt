@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 # Here we define several plotting routines to visualize the optimization process and results
 
-def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename, d_alpha=0.01):
+def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename):
     """Makes a two-panel plot of the cubic spline and its derivative.
 
     INPUTS
@@ -16,8 +16,6 @@ def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename, d_alpha=0.01)
     L_spl_1d      - the 1st derivative of the cubic spline function (from Optimizxer.L_spl_1d )
     filename      - the filename to write the plot  
 
-    PARAMETERS
-    d_alpha       - resolution to compute and plot the continuous L(alpha) curve
     """
 
     plt.figure(figsize=(6,3))
@@ -27,7 +25,7 @@ def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename, d_alpha=0.01)
         plt.subplot(1,2,1)
         plt.plot(alpha_values, L_values, 'ro', label = 'data')
 
-        alpha_range = np.arange(alpha_values[0], alpha_values[-1], d_alpha)
+        alpha_range = np.linspace(alpha_values[0], alpha_values[-1], 1000)
         plt.plot(alpha_range, L_spl(alpha_range), label="spline")   # for UnivariateSpline
         ## plt.plot(x_observed, y_spl(x_observed), label="spline") # for CubicSpline
 
@@ -49,5 +47,69 @@ def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename, d_alpha=0.01)
     print(f'Wrote: {filename}')
 
 
+def plot_opt_traces(traj_alphas, L_spl, filename):
+    """Makes a two-panel plot of the optimization trajectory:
+    traces of the alpha values vs optimization step, and 
+    traces of the L(alpha) values vs optimization step.""" 
+
+
+    K, nsteps = traj_alphas.shape
+
+    plt.figure(figsize=(6,3))
+
+    # Plot alpha values vs optimization step
+    plt.subplot(1,2,1)
+    for i in range(K):
+        plt.plot(np.arange(nsteps), traj_alphas[i,0:nsteps], '-')
+    plt.xlabel('step')
+    plt.ylabel(r'$\alpha_k$ values')
+    
+    plt.subplot(1,2,2)
+    for i in range(K):
+        plt.plot(np.arange(nsteps), L_spl(traj_alphas[i,0:nsteps]), '-')
+    plt.xlabel('step')
+    plt.ylabel(r'$\mathcal{L}(\alpha_k)$ values')
+
  
+    plt.tight_layout()
+    plt.savefig(filename)
+    print(f'Wrote: {filename}')
+
+
+def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename):
+    """makes a two panel plot of thee old and new alpha values marked at
+    locations on the L(alpha) vs alpha plot."""
+
+    plt.figure(figsize=(8,4))
+
+    alpha_range = np.linspace(old_alphas[0], old_alphas[-1], 1000)
+
+    if (1):
+        # Plot the old alphas on the L(alphas) vs alpha plot
+        plt.subplot(2,1,1)
+        plt.plot(alpha_range, L_spl(alpha_range), 'b-', label="spline")
+        plt.plot(old_alphas, L_spl(np.array(old_alphas)), 'r.', label="old alphas")
+        for value in old_alphas:
+            plt.plot([value, value], [0, L_spl(value)], 'r-')
+        plt.legend()
+        plt.xlabel(r'$\alpha$')
+        plt.ylabel(r'$\mathcal{L}(\alpha)$')
+        plt.title(r'old $\alpha_k$ values')
+
+    if (1):
+        # Plot the new alphas on the L(alphas) vs alpha plot
+        plt.subplot(2,1,2)
+        plt.plot(alpha_range, L_spl(alpha_range), 'b-', label="spline")
+        plt.plot(new_alphas, L_spl(new_alphas), 'g.', label="new alphas")
+        for value in new_alphas:
+            plt.plot([value, value], [0, L_spl(value)], 'g-')
+        plt.legend()
+        plt.xlabel(r'$\alpha$')
+        plt.ylabel(r'$\mathcal{L}(\alpha)$')
+        plt.title(r'new $\alpha_k$ values')
+
+    plt.tight_layout()
+    plt.savefig(filename)
+    print(f'Wrote: {filename}')
+
 

@@ -8,6 +8,9 @@ from scipy import stats
 
 from ee_tools import *
 
+from optimizer import *
+from plotting import *
+
 
 def optimize_fep_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, save_plots=True, verbose=True):
     """
@@ -21,7 +24,11 @@ def optimize_fep_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True
     """
 
 
+    # For a simple FEP alchemical transformation, there is only one lambda parameter,
+    # so that phi(\alpha_k) = \lambda_k
+
     lambdas = get_fep_lambdas(mdpfile)
+
     if verbose:
         print('lambdas', lambdas)
         print('lambdas.shape', lambdas.shape)
@@ -75,168 +82,56 @@ def optimize_fep_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True
         pass
 
 
-    ### Lambda optimization
+    #################################################
+    ### alchemical optimization
 
-    dx = sigmas                 #according to Vince's equation (VAV: k is set to 1)
-    
-    x_values = np.cumsum(dx)    # convert to a list of x values of separated harmonic potentials
-    x_values = np.array(np.concatenate([[0], x_values]))    # add a zero corresponding to lambda0 = 0.0
+    alpha_values = lambdas	
+
+    L_values = np.cumsum(sigmas)    # convert to a list of L(0,\alpha_k) values
+    L_values = np.array(np.concatenate([[0], L_values]))    # add a zero corresponding to \alpha[0] = 0.0
     ## VAV: This zero needs to be included.  Why was this left out before?
-    print('x_values', x_values)
 
+    print('L_values', L_values)
 
-    from scipy.interpolate import UnivariateSpline
-    from scipy.interpolate import interp1d
+    # Create an Optimizer() object
+    o = Optimizer()
 
-    if make_plots:
-        plt.figure(figsize=(12,6))
-
-    lambda_values = lambdas #not inclduing the first one, lambda_0 
-
-    x_observed = lambda_values      #not inclduing the first one, lambda_0
-    y_observed = x_values
+    # create the cubic spline and 1st deriv functions, o.L_spl() and o.L_spl_1d()
+    o.create_spline(alpha_values, L_values)
+    print('o.L_spl', o.L_spl, 'o.L_spl_1d', o.L_spl_1d)
 
     if make_plots:
-        plt.subplot(1,2,1)
-        plt.plot(x_observed, y_observed, 'ro', label = 'data')
-        #plt.semilogy(x_observed, y_observed, 'ro', label = 'data')
-
-    #y_spl = CubicSpline(x_observed, y_observed)#, s=0,k=4)  
-    y_spl = UnivariateSpline(x_observed, y_observed, s=0, k=3)  
-    x_range = np.linspace(x_observed[0], x_observed[-1], 1000)
+        # make plots of the spline
+        spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png') 
+        spline_pdffile = os.path.join(outdir, f'{outname}_splinefit.pdf')
+        plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
 
 
-    if make_plots:
-        plt.plot(x_range, y_spl(x_range), label="spline")   # for UnivariateSpline
-        ## plt.plot(x_observed, y_spl(x_observed), label="spline") # for CubicSpline
-        plt.legend()
-        plt.xlabel('lambda')
-        plt.ylabel('x values')
+    # Optimize the \alpha_k values
+    new_alphas, traj_alphas = o.optimize_alphas(alpha_values)
 
-        plt.subplot(1,2, 2)   #derivative plot
-
-    y_spl_1d = y_spl.derivative(n=1)    #n=1 , means the first order derivative
-    #print (y_spl_1d(x_observed))
-    # y_spl_1d = y_spl(x_observed, 1)  # first derivative of Cubic spline
-
-    if make_plots:
-        plt.plot(x_range, y_spl_1d(x_range), '-')
-        plt.plot(x_observed, y_spl_1d(x_observed), '.')
-        plt.ylabel('dx/dlambda')
-        
-        #plt.plot(x_observed, y_spl_1d, '.-', label='derivative')
-        plt.legend()
-        plt.xlabel('lambda')
-
-        if save_plots:
-            spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png') 
-            plt.savefig(spline_pngfile)
-            print(f'Wrote: {spline_pngfile}')
-
-
-
-    # Let's try a steepest descent algorithm like the kind I wrote up in "math-gradient-descent-2021-05-07.pdf" -VAV
-
-    # run the algorithm some fixed number of steps, or until some tolerance is reached
-    nsteps = 100000
-    tol = 1e-7  # stop if the lambdas dont change within this tolerance
-
-    alpha = 1e-5  # gradient descent step size
-    max_del_lambda = 0.0001   # the minimization step limited to this as a maximum change
-
-    print_every = 2000
-    
-    nlambdas = len(lambda_values)
-    print('lambda_values', lambda_values)
-    old_lambdas = np.array(lambda_values)
-    traj_lambdas = np.zeros( (nlambdas,nsteps) )
-    for step in range(nsteps):
-
-        # store the trajectory of lambdas
-        traj_lambdas[:,step] = old_lambdas
-        if verbose:
-            print('step', step, old_lambdas)
-    
-        # perform a steepest descent step
-        new_lambdas = np.zeros( old_lambdas.shape )
-        del_lambdas = np.zeros( old_lambdas.shape )
-        del_lambdas[0] = 0.0   # fix the \lambda = 0 endpoint
-        del_lambdas[nlambdas-1] = 0.0  # fix the \lambda = 1 endpoint
-    
-        if False:  # do in a loop (SLOW!) 
-            for i in range(1, (nlambdas-1)):
-                del_lambdas[i] = -1.0*alpha*2.0*y_spl_1d(old_lambdas[i])*( 2.0*y_spl(old_lambdas[i]) - y_spl(old_lambdas[i-1]) - y_spl(old_lambdas[i+1]))
-        else:   # do as a vector operation (FAST!) 
-            y_all = y_spl(old_lambdas)
-            yh, yi, yj = y_all[0:nlambdas-2], y_all[1:nlambdas-1], y_all[2:nlambdas] 
-            del_lambdas[1:nlambdas-1] = -1.0*alpha*2.0*y_spl_1d(old_lambdas[1:nlambdas-1])*( 2.0*yi - yh - yj)
-        if abs(np.max(del_lambdas)) > max_del_lambda:
-            del_lambdas[1:nlambdas-1] = del_lambdas[1:nlambdas-1]*max_del_lambda/np.max(del_lambdas)
-        new_lambdas = old_lambdas + del_lambdas
-        
-        # record the average change in the lambdas 
-        del_lambdas = np.abs(old_lambdas - new_lambdas).mean()
-        if step % print_every == 0:
-            print('step', step, 'del_lambdas', del_lambdas)
-        if del_lambdas < tol:
-            print('Tolerance has been reached: del_lambdas =', del_lambdas, '< tol =', tol)
-            break
-        
-        old_lambdas = new_lambdas
    
     if make_plots:     
+        # make plots of the optimization traces
+        traces_pngfile = os.path.join(outdir, f'{outname}_opt_traces.png')
+        traces_pdffile = os.path.join(outdir, f'{outname}_opt_traces.pdf')
+        plot_opt_traces(traj_alphas, o.L_spl, traces_pdffile)
+
     
-        # Plot the results
-        plt.figure(figsize=(12,4))
-
-        plt.subplot(1,2,1)
-        for i in range(nlambdas):
-            plt.plot(range(step), traj_lambdas[i,0:step], '-')
-        plt.xlabel('step')
-        plt.ylabel('lambda values')
-        
-        plt.subplot(1,2,2)
-        for i in range(nlambdas):
-            plt.plot(range(step), y_spl(traj_lambdas[i,0:step]), '-')
-        plt.xlabel('step')
-        plt.ylabel('x values')
-
-        if save_plots:
-            traces_pngfile = os.path.join(outdir, f'{outname}_optimization_traces.png')
-            plt.savefig(traces_pngfile)
-            print(f'Wrote: {traces_pngfile}')
-
-
     if make_plots:
+        # make plots of old versus new alphas
+        old_new_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.png')
+        old_new_pdffile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.pdf')
+        plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pdffile)
 
-        plt.figure(figsize=(12,4))
 
-        plt.subplot(2,1,1)
-        plt.plot(x_range, y_spl(x_range), 'b-', label="spline")
-        plt.plot(lambda_values, y_spl(np.array(lambda_values)), 'r.', label="old lambdas")
-        for value in lambda_values:
-            plt.plot([value, value], [0, y_spl(value)], 'r-')
-        plt.legend()
-        plt.xlabel('lambda')
-        plt.ylabel('x values')
-        plt.title('old lambdas')
+    # create a path function $\phi(\alpha) \rightarrow \vec{\lambda} to map the alphas back to lambdas
+    phi = o.create_phi(labels=['FEP'], ascending=[True])
 
-        plt.subplot(2,1,2)
-        plt.plot(x_range, y_spl(x_range), 'b-', label="spline")
-        plt.plot(new_lambdas, y_spl(new_lambdas), 'g.', label="new lambdas")
-        for value in new_lambdas:
-            plt.plot([value, value], [0, y_spl(value)], 'g-')
-        plt.legend()
-        plt.xlabel('lambda')
-        plt.ylabel('x values')
-        plt.title('new lambdas')
+    print('new_alphas', new_alphas)
 
-        plt.tight_layout()
-
-        if save_plots:
-            old_vs_new_lambdas_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_lambdas.png')
-            plt.savefig(old_vs_new_lambdas_pngfile)
-            print(f'Wrote: {old_vs_new_lambdas_pngfile}')
+    # perform the mapping and return the new lambdas
+    new_lambdas = phi(new_alphas)
 
     return new_lambdas
 

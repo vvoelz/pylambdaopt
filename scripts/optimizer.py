@@ -1,4 +1,5 @@
 import os, sys
+import numpy as np
 
 import scipy
 from scipy import *
@@ -35,12 +36,12 @@ class Optimizer(object):
         from scipy.interpolate import interp1d
 
         self.L_spl = UnivariateSpline(alpha_values, L_values, s=0, k=3)
-        self.L_spl_1d = L_spl.derivative(n=1) 
+        self.L_spl_1d = self.L_spl.derivative(n=1) 
 
         return 
 
 
-    def optimize_alphas(alphas, nsteps=100000, tol=1e-7, gamma=1e-5, max_del=0.0001, print_every=2000):
+    def optimize_alphas(self, alphas, nsteps=100000, tol=1e-7, gamma=1e-5, max_del=0.0001, print_every=2000):
         """Given a set of alphas, optimize
 
         NOTE: These set of alphas could be different from the set a_k that the spline was fit to.  In this way
@@ -130,13 +131,27 @@ class Optimizer(object):
 
         def phi(alpha):
             """Return the value of mapping function phi(\alpha) \rightarrow \vec{lambda}."""
-            result = np.zeros(nlambdas) 
-            for i in range(nlambdas):
-                if ascending[i]:
-                    result[i] = min( max(0, alpha - i), 1.0)
-                else:
-                    result[i] = min( max(0, 1.0 - alpha + i), 1.0)
-            return result
+
+            if np.isscalar(alpha):
+                result = np.zeros(nlambdas) 
+                for i in range(nlambdas):
+                    if ascending[i]:
+                        result[i] = min( max(0, alpha - i), 1.0)
+                    else:
+                        result[i] = min( max(0, 1.0 - alpha + i), 1.0)
+                return result
+
+            else:
+                N = len(alpha)
+                result = np.zeros((N, nlambdas))
+                for k in range(N):
+                    for i in range(nlambdas):
+                        if ascending[i]:
+                            result[k,i] = min( max(0, alpha[k] - i), 1.0)
+                        else:
+                            result[k,i] = min( max(0, 1.0 - alpha[k] + i), 1.0)
+                return result
+
 
         return phi
 
