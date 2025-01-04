@@ -1,0 +1,2 @@
+python ../scripts/optimize_FEP_lambdas_K.py test_optK_relative_FEP_R3E_miniprotein/EE.mdp test_optK_relative_FEP_R3E_miniprotein/dhdl.xvg opt ./test_optK_relative_FEP_R3E_miniprotein
+
