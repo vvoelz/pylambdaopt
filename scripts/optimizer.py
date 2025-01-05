@@ -4,6 +4,8 @@ import numpy as np
 import scipy
 from scipy import *
 
+from mixing import *
+
 
 class Optimizer(object):
     """A class to optimize alchemical intermediates by spacing them equally in thermodynamic length."""
@@ -111,7 +113,7 @@ class Optimizer(object):
         
             old_alphas = new_alphas
 
-        return new_alphas, traj_alphas
+        return new_alphas, traj_alphas[:,0:step]
         
 
 
@@ -154,6 +156,55 @@ class Optimizer(object):
 
 
         return phi
+
+    def optimize_K(self, alpha_1, alpha_K, min_K=5, max_K=200):
+        """Given an already-fit spline, adjust the number K of intermediates alpha_k between
+        two endpoints alpha_1 and alpha_K to minimize the mixing time.
+
+        INPUTS
+        alpha_1 - the left endpoint of the alpha_k
+        alpha_K - the right endpoint of the alpha_k
+
+        PARAMETERS
+        min_K   - the minimum value of K to consider. Default: 5
+        max_K   - the maximum value of K to consider. Default: 200  
+
+        
+
+        """
+
+        assert (self.L_spl != None) and (self.L_spl_1d != None), \
+            "The cubic spline functions need to be defined before running this routine! Please run Optimizer.create_spline() first,"
+
+        # estimate the total thermodynamic length between the endpoints
+        L_tot = self.L_spl(alpha_K) - self.L_spl(alpha_1)
+
+        # for a range of K, calculate the mixing times t2
+        K_values = np.arange(min_K, max_K+1)
+        P_acc_values = []
+        t2_values = []
+        for K in K_values:
+
+            L = L_tot/(K-1)
+            P_acc = np.exp(-L**2 / 2) 
+            P_acc_values.append(P_acc)
+
+            m = MixingTime(P_acc, K)   # initializing this object will compute the transition matrix T and implied timescales t_k
+            t2_values.append( m.t_k[1] ) # the second implied timescale is t2 (the first is t1 = 1.)  
+
+
+        # determine the optimal K = argmin(t2)
+        t2_values = np.array(t2_values)
+        P_acc_values = np.array(P_acc_values)
+
+        Ind = np.isfinite(t2_values)
+        finite_t2_values = t2_values[Ind]
+        finite_K_values = K_values[Ind]
+
+        optimal_K = finite_K_values[np.argmin(finite_t2_values)]
+
+        return optimal_K, K_values, P_acc_values, t2_values
+
 
 
 ##################################
