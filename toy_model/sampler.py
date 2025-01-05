@@ -12,8 +12,11 @@ class ToySampler(object):
 
     """
 
-    def __init__(self, k_f=10.0):
+    def __init__(self, lambdas, k_f=10.0):
         """Initialize the class.
+
+        INPUTS
+        lambdas - a set of lambda values provided in a np.array object
 
         PARAMETERS
         k_f - the force constant for the harmonic well, in units k_BT.
@@ -22,7 +25,7 @@ class ToySampler(object):
         # Harmonic potential settings
         self.k_f = k_f
         self.x0  = 10.0
-        self.lambdas = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.65, 0.77, 0.88, 1.0])
+        self.lambdas = lambdas   #  np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.65, 0.8, 0.9, 1.0])
         self.K = len(self.lambdas)
 
         # Wang-Landau settings
@@ -158,7 +161,7 @@ class ToySampler(object):
             # print a status report
             if step % print_every == 0:
                 print()
-                print(f'x {x:2.6f}, k {k} wl_increment = {self.wl_increment:1.6f} kT')
+                print(f'step {step} of {nsteps}: x {x:2.6f}, k {k} wl_increment = {self.wl_increment:1.6f} kT')
                 print()
                 print('# ensemble\thistogram\tg (kT)')
                 for i in range(self.K):
@@ -174,7 +177,7 @@ class ToySampler(object):
                 self.step_traj.append(step)
                 self.f_k_traj.append(copy.copy(self.f_k))
                 self.wl_increment_traj.append(copy.copy(self.wl_increment))
-                self.u_k_traj.append(self.u_k(x))
+                self.u_k_traj.append(self.u_k(x) - self.u_k(x)[k])
         
 
         self.acc_probs = self.accepted/(self.attempted + 0.0001)  # avoid division by zero
@@ -195,6 +198,11 @@ class ToySampler(object):
         assert len(self.u_k_traj) == len(self.step_traj)
 
         N = len(self.step_traj)
+
+        # lambda_values
+        lambda_values_file = os.path.join(outdir, 'lambda_values.txt')
+        np.savetxt(lambda_values_file, self.lambdas, fmt=['%1.6f'], delimiter='\t', header='#lambda_k')
+        print(f'Wrote: {lambda_values_file}')
 
         # coord trajectory 
         coord_traj = np.zeros( (N, 3))
@@ -239,11 +247,18 @@ class ToySampler(object):
         print(f'Wrote: {u_k_trajfile}')
 
 
+        # transition matrix
+        transition_matrix_file = os.path.join(outdir, 'transition_matrix.txt')
+        np.savetxt(transition_matrix_file, self.acc_probs, fmt='%1.6e', delimiter='\t')
+        print(f'Wrote: {transition_matrix_file}')
+
+
 
 if __name__ == '__main__':
 
-    s = ToySampler()
-    s.sample(nsteps=200000, print_every=1000, traj_every=100)
+    lambdas = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.65, 0.8, 0.9, 1.0])
+    s = ToySampler(lambdas)
+    s.sample(nsteps=2000000, print_every=1000, traj_every=100)
 
     s.save_traj_data('testout')
 
