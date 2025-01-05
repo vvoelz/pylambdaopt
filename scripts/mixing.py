@@ -27,7 +27,7 @@ class MixingTime(object):
         | ...      ...        a    b     a  |
         |                          a    b+a |
 
-        where a = P_acc, b = 1 - 2P_acc.
+        where a = P_acc/2, b = 1 - P_acc.
 
 
         INPUTS
@@ -43,8 +43,8 @@ class MixingTime(object):
         if K == None:
             K = self.K
 
-        a = P_acc
-        b = 1.0 - (2.0* P_acc)
+        a = P_acc/2
+        b = 1.0 - P_acc
 
         # fill the diagonal with b
         T =  np.diag( b*np.ones(K)) 
@@ -69,7 +69,7 @@ class MixingTime(object):
         according to the formula
 
 
-        $ \mu_k = 1 - 2P_acc[1 - \cos \frac{(k-1)\pi}{K} $
+        $ \mu_k = 1 - P_acc[1 - \cos \frac{(k-1)\pi}{K} $
 
         see Theorem 5 of Yueh, Wen-Chyuan (2005)
 
@@ -85,7 +85,7 @@ class MixingTime(object):
 
         k_values = np.arange(K)
 
-        mu_k = 1.0 - 2.0*P_acc*(1.0 - np.cos( k_values  * np.pi / K ))
+        mu_k = 1.0 - P_acc*(1.0 - np.cos( k_values  * np.pi / K ))
 
         return mu_k
 
