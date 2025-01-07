@@ -42,18 +42,20 @@ def optimize_toy_lambdas(result_dir, outdir, make_plots=True, save_plots=True, v
     lambdas = np.loadtxt(os.path.join(result_dir,'lambda_values.txt'))
     K = len(lambdas)  # number of intermediates
 
-    # estimate the sigmas from the u_k data
+    nsteps = len(step_traj)
+
+    # estimate the sigmas from the last 10% of the u_k points 
     sigmas = []
     for k in range(K-1) :
 
-        Ind = np.where( k_traj == k ) 
+        Ind = np.where( (k_traj == k) & (step_traj > 0.9*nsteps ) )
         print('Ind', Ind)
         fwd_work_values = u_k_traj[Ind,k+1] - u_k_traj[Ind,k]
         fwd_work_values = fwd_work_values[ int(len(Ind)/2): ]   # take last half
         print('fwd_work_values', fwd_work_values)
         sigma_fwd  = np.std(fwd_work_values) # std dev of forward instantanous work values
 
-        Ind2 = np.where( k_traj == (k+1) ) 
+        Ind2 = np.where( (k_traj == (k+1)) & (step_traj > 0.9*nsteps ) )
         print('Ind2', Ind2)
         bwd_work_values = u_k_traj[Ind2,k] - u_k_traj[Ind2,k+1]
         bwd_work_values = bwd_work_values[ int(len(Ind)/2): ]   # take last half
@@ -137,7 +139,7 @@ if __name__ == '__main__':
               
     EXAMPLE
     Try this:
-        $ python optimize_toy_lambdas.py testout testopt 
+        $ python optimize_toy_lambdas.py test10M_unoptimized test10M_unoptimized_opt 
     """        
 
     # Parse input
@@ -161,5 +163,10 @@ if __name__ == '__main__':
     print('### Optimized lambda values ###')
     print('')
     print('new_toy_lambdas', new_toy_lambdas)
+
+    # write the optimized_lambda to file
+    outfile = os.path.join(outdir, 'optimized_lambdas.txt')
+    np.savetxt(outfile, new_toy_lambdas)    
+    print(f'Wrote: {outfile}')
 
 

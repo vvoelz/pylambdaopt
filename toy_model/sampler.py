@@ -63,7 +63,7 @@ class ToySampler(object):
         return self.k_f/2.0 * (x - self.lambdas*self.x0)**2
 
 
-    def sample(self, nsteps=200000, x_init=0.0, dx=0.1, k_init=0, print_every=10000, traj_every=100):
+    def sample(self, nsteps=200000, x_init=0.0, dx=0.5, k_init=0, print_every=10000, traj_every=100):
         """Perform EE sampling.
 
         INPUTS
