@@ -149,7 +149,7 @@ if __name__ == '__main__':
               
     EXAMPLE
     Try this:
-        $ python optimize_toy_lambdas_K.py testout testopt_K
+        $ python optimize_toy_lambdas_K.py test10M_unoptimized test10M_unoptimized_opt_K
     """        
 
     # Parse input
@@ -173,5 +173,11 @@ if __name__ == '__main__':
     print('### Optimized lambda values ###')
     print('')
     print('new_toy_lambdas', new_toy_lambdas)
+
+
+    # write the optimized_lambda to file
+    outfile = os.path.join(outdir, 'optimized_lambdas.txt')
+    np.savetxt(outfile, new_toy_lambdas)
+    print(f'Wrote: {outfile}')
 
 
