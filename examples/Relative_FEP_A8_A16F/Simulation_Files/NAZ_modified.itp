@@ -1,0 +1,8 @@
+[ moleculetype ]
+; molname       nrexcl
+NAZ              1
+[ atoms ]
+; id    at type         res nr  residu name     at name  cg nr  charge
+;;;1       Na              1       NA              NA       1      1.00000
+;   nr       type  resnr residue  atom   cgnr     charge       mass    typeB    chargeB      massB
+    1        Na    1     NAZ       NA     1       1.00000     22.99000  NA       0.00000      22.99000
