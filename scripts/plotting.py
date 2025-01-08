@@ -23,7 +23,7 @@ def plot_spline(alpha_values, L_values, L_spl, L_spl_1d, filename):
     # plot the cubic spline in the first panel
     if (1):
         plt.subplot(1,2,1)
-        plt.plot(alpha_values, L_values, 'ro', label = 'data')
+        plt.plot(alpha_values, L_values, 'ro', label = 'data', ms=4)
 
         alpha_range = np.linspace(alpha_values[0], alpha_values[-1], 1000)
         plt.plot(alpha_range, L_spl(alpha_range), label="spline")   # for UnivariateSpline
@@ -111,5 +111,31 @@ def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename):
     plt.tight_layout()
     plt.savefig(filename)
     print(f'Wrote: {filename}')
+
+
+def plot_mixing(K_values, P_acc_values, t2_values, filename, max_t2=1e7):
+    """Makes a plot of the mixing time t2 vs the number of alchemical intermediates K."""
+
+
+    plt.figure(figsize=(5,4))
+
+    Ind = np.isfinite(t2_values)*(np.array(t2_values) < max_t2)
+    finite_K_values = np.array(K_values)[Ind]
+    finite_t2_values = np.array(t2_values)[Ind]
+    plt.plot(finite_K_values, finite_t2_values, 'b-', label=r'$t_2(K)$')
+
+    # find the minimum and mark it
+    Ind = np.argmin(finite_t2_values)
+    plt.plot(finite_K_values[Ind], finite_t2_values[Ind], 'r*', label=f'minimum at K={finite_K_values[Ind]}')
+
+    plt.yscale('log')
+    plt.xlabel(r'number of intermediates $K$')
+    plt.ylabel(r'mixing time $t_2$ (in units $\tau$)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(filename)
+    print(f'Wrote: {filename}')
+
 
 
