@@ -188,7 +188,7 @@ def write_optimized_fep_mdp(new_fep_lambdas, input_mdpfile, output_mdpfile):
     fin.close()
 
     ## Format the new fep_lambdas_string for the mdp file
-    fep_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_fep_lambdas])
+    fep_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_fep_lambdas.ravel()])
     fep_lambdas_line = f'fep-lambdas         = {fep_lambdas_string}\n'
 
     # Find the 'fep-lambdas' line 
@@ -226,7 +226,7 @@ if __name__ == '__main__':
 
     Try this:
         $ cd ../examples
-        $ python ../scripts/optimize_FEP_lambdas.py FEP_A8_A16F_unopt/EE.mdp FEP_A8_A16F_unopt/dhdl.xvg opt FEP_A8_A16F_unopt
+        $ python ../scripts/optimize_FEP_lambdas.py FEP_A8_A16F_unopt/EE.mdp FEP_A8_A16F_unopt/dhdl_unopt_trial1.xvg opt FEP_A8_A16F_unopt
 
     """
 
@@ -278,12 +278,11 @@ if __name__ == '__main__':
     # Optimize the lambdas
     new_fep_lambdas = optimize_fep_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K=optimize_K, make_plots=True, usePDF=True, verbose=verbose)
 
-
     # print out new fep_lambdas, formatted like an mdp file
     print('### Optimized lambda values ###')
     print('')
     ## fep_lambdas_string
-    fep_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_fep_lambdas])
+    fep_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_fep_lambdas.ravel()])
     print(f'fep-lambdas         = {fep_lambdas_string}')
     print()
 
