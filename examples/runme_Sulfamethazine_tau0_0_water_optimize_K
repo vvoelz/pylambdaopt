@@ -1,0 +1,2 @@
+python ../scripts/optimize_coul_vdw_lambdas.py --optimize_K Sulfamethazine_tau0_0_water/ee.mdp Sulfamethazine_tau0_0_water/ee.dhdl.xvg opt Sulfamethazine_tau0_0_water_optimize_K
+

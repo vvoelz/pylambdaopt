@@ -1,7 +1,8 @@
 import os, sys
+import argparse
+
 import numpy as np
 import matplotlib.pyplot as plt
-#  %matplotlib inline
 
 import scipy 
 from scipy import stats	
@@ -12,21 +13,30 @@ from plotting import *
 
 
 
-def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, save_plots=True, verbose=True):
+def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K=False, make_plots=True, usePDF=True, verbose=True):
     """
     DESCRIPTION
-        Optimize the lambda values for all intermediates
-        to minimize the total variance in P(\Delta u_ij) for neighboring thermodynamic ensembles
+        Optimize the lambda values for all intermediates by equally spacing them in thermodynamic length.
+
+        NOTE: This script *assumes* that the coul and vdw lambda values are changed sequentially,
+        i.e. First the coul lambda goes from 0.0 to 1.0, then the vdw lambda goes from 0.0 to 1.0. 
+
+    INPUT
+        mdpfile      - Input .mdp file
+        dhdl_xvgfile - Input dhdl.xvg file
+        outname      - basename for output file naming
+        outdir       - Output directory
+
+    PARAMETERS
+        optimize_K   - If True, additionally optimize the number of intermediates K. Default: False
+        make_plots   - If True, save plots to files.  Default: True
+        usePDF       - If True, plots will be saved as PDF; otherwise use PNG. Default: True
+        verbose      - If True, more verbose output will be printed 
 
     RETURNS
-        coul-lambdas, vdw-lambdas   (their optimized values)
+        coul_lambdas, vdw_lambdas   (their optimized values)
 
-    WARNING
-        This script *assumes* that the coul and vdw lambda values
-        are changed sequentially, i.e. First the coul lambda goes from 0.0 to 1.0, then the vdw
-        lambda goes from 0.0 to 1.0, ideally with one of the intermediates having coul-lambda = 1.0, vdw-lambda = 0.0. 
     """
-
 
     coul_lambdas, vdw_lambdas = get_coul_vdw_lambdas(mdpfile)
 
@@ -106,27 +116,62 @@ def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots
 
     if make_plots:
         # make plots of the spline
-        spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png') 
-        spline_pdffile = os.path.join(outdir, f'{outname}_splinefit.pdf')
-        plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
+        if usePDF:
+            spline_pdffile = os.path.join(outdir, f'{outname}_splinefit.pdf')
+            plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
+        else:
+            spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png')
+            plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pngfile)
 
 
-    # Optimize the \alpha_k values
-    new_alphas, traj_alphas = o.optimize_alphas(alpha_values)
+    ##### optimize the numnber of alchemical intermediates K,  if specified 
+    if optimize_K:
+
+        #### optimize K  based on the mixing times
+
+        optimal_K, K_values, P_acc_values, t2_values = o.optimize_K(alpha_values[0], alpha_values[-1], min_K=5, max_K=200)
+        print('optimal_K =', optimal_K)
+
+        # print('K_values', K_values)
+        # print('P_acc_values', P_acc_values)
+        # print('t2_values', t2_values)
+
+        if make_plots:
+            # make plots of the mixing time versus K 
+            if usePDF:
+                mixing_pdffile = os.path.join(outdir, f'{outname}_mixing.pdf')
+                plot_mixing(K_values, P_acc_values, t2_values, mixing_pdffile)
+            else:
+                mixing_pngfile = os.path.join(outdir, f'{outname}_mixing.png')
+                plot_mixing(K_values, P_acc_values, t2_values, mixing_pngfile)
+
+        # Based on the optimal K, Optimize a new set of  \alpha_k values, k=1,...K
+        adjusted_alpha_values = np.linspace(alpha_values[0], alpha_values[-1], optimal_K)
+        new_alphas, traj_alphas = o.optimize_alphas(adjusted_alpha_values)
+
+    else:
+        # Optimize the \alpha_k values (without changing their number)
+        new_alphas, traj_alphas = o.optimize_alphas(alpha_values)
 
    
     if make_plots:     
         # make plots of the optimization traces
-        traces_pngfile = os.path.join(outdir, f'{outname}_opt_traces.png')
-        traces_pdffile = os.path.join(outdir, f'{outname}_opt_traces.pdf')
-        plot_opt_traces(traj_alphas, o.L_spl, traces_pdffile)
+        if usePDF:
+            traces_pdffile = os.path.join(outdir, f'{outname}_opt_traces.pdf')
+            plot_opt_traces(traj_alphas, o.L_spl, traces_pdffile)
+        else:
+            traces_pngfile = os.path.join(outdir, f'{outname}_opt_traces.png')
+            plot_opt_traces(traj_alphas, o.L_spl, traces_pngfile)
 
     
     if make_plots:
         # make plots of old versus new alphas
-        old_new_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.png')
-        old_new_pdffile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.pdf')
-        plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pdffile)
+        if usePDF:
+            old_new_pdffile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.pdf')
+            plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pdffile)
+        else:
+            old_new_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.png')
+            plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pngfile)
 
 
     # create a path function $\phi(\alpha) \rightarrow \vec{\lambda} to map the alphas back to lambdas
@@ -142,51 +187,121 @@ def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots
     return new_coul_lambdas, new_vdw_lambdas
 
 
+def write_optimized_coul_vdw_mdp(new_coul_lambdas, new_vdw_lambdas, input_mdpfile, output_mdpfile):
+    """Replace the "coul-lambdas"  and "vdw-lambdas" lines in the mdpfile with the optimized values."""
+
+    # Read in lines from the input mdpfile
+    fin = open(input_mdpfile, 'r')
+    lines = fin.readlines()
+    fin.close()
+
+    ## Format the new coul_lambdas_string for the mdp file
+    coul_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_coul_lambdas.ravel()])
+    coul_lambdas_line = f'coul-lambdas         = {coul_lambdas_string}\n'
+
+    # Find the 'coul-lambdas' line 
+    for i in range(len(lines)):
+        line = lines[i]
+        fields = line.strip().split()
+        if len(fields) > 0:
+            if (fields[0].count('coul-lambdas') > 0) | (fields[0].count('coul_lambdas') > 0):
+                lines[i] = coul_lambdas_line
+
+    ## Format the new vdw_lambdas_string for the mdp file
+    vdw_lambdas_string   = ' '.join(['%2.5f'%lam for lam in new_vdw_lambdas.ravel()])
+    vdw_lambdas_line = f'vdw-lambdas         = {vdw_lambdas_string}\n'
+
+    # Find the 'vdw-lambdas' line 
+    for i in range(len(lines)):
+        line = lines[i]
+        fields = line.strip().split()
+        if len(fields) > 0:
+            if (fields[0].count('vdw-lambdas') > 0) | (fields[0].count('vdw_lambdas') > 0):
+                lines[i] = vdw_lambdas_line
+
+
+
+    # Write the output mdpfile
+    fout = open(output_mdpfile, 'w')
+    fout.writelines(lines)
+    fout.close()
+
+
+
 
 ########################
 
 if __name__ == '__main__':
 
-    usage  = """Usage:    python optimize_fep_lambdas.py mdpfile dhdl_xvgfile outname outdir
 
-    DESCRIPTION
-        This script will optimize the lambda values for all intermediates
-        to minimize the total variance in P(\Delta u_ij) for neighboring thermodynamic ensembles
+    usage = """\
+    This script will optimize the lambda values of all alchemical intermediates by equally
+    spacing them in thermodynamic length.
 
-    OUTPUT
-        * A mdpfile-compatible string with new coul-lambdas and vdw-lambdas printed to std output
-        * Numpy arrays of the new values will be written to:
-            - [outdir]/[outname]_new_coul_lambdas.py
-            - [outdir]/[outname]_new_vdw_lambdas.py
-        * graphs associated with the lambda optimization will be written as images:
-            - [outdir]/[outname]_optimization_traces.png
-            - [outdir]/[outname]_old_vs_new_lambdas.png
-            - [outdir]/[outname]_splinefit.png
-        * a new expanded-ensemble mdp file: [outname]_ee_optimized.mdp
-              
-    EXAMPLE
+    OUTPUT (saved in the specified outdir):
+    * A mdpfile-compatible string with new coul-lambdas and vdw-lambdas printed to std output
+    * Numpy arrays of the new values will be written to:
+        - [outdir]/[outname]_new_coul_lambdas.py
+        - [outdir]/[outname]_new_vdw_lambdas.py
+    * Graphs associated with the lambda optimization will be written as images:
+        - [outdir]/[outname]_optimization_traces.pdf (or png)
+        - [outdir]/[outname]_old_vs_new_lambdas.pdf (or png)
+        - [outdir]/[outname]_splinefit.pdf (or png)
+
     Try this:
         $ cd ../examples
         $ python ../scripts/optimize_coul_vdw_lambdas.py Sulfamethazine_tau0_0_water/ee.mdp Sulfamethazine_tau0_0_water/ee.dhdl.xvg opt Sulfamethazine_tau0_0_water
-    """        
 
-    # Parse input
+    """
 
-    if len(sys.argv) < 5:
-        print(usage)
+    # Initialize the parser using RawTextHelpFormatter to preserve newlines
+    parser = argparse.ArgumentParser(description=usage, formatter_class=argparse.RawTextHelpFormatter)
+
+    # Add positional arguments
+    parser.add_argument("mdpfile", help="Input .mdp file")
+    parser.add_argument("dhdl_xvgfile", help="Input dhdl.xvg file")
+    parser.add_argument("outname", help="Output base name")
+    parser.add_argument("outdir", help="Output directory")
+
+    # Add an optional Boolean flag (verbose mode)
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose mode for debugging")
+
+    # Add an optional Boolean flag (verbose mode)
+    parser.add_argument("--optimize_K", action="store_true", help="Additionally optimize the number of intermediates K")
+
+    # If no arguments are provided, print usage and exit
+    if len(sys.argv) == 1:  # No arguments provided
+        parser.print_help()
         sys.exit(1)
 
-    mdpfile      = sys.argv[1]
-    dhdl_xvgfile = sys.argv[2]
-    outname      = sys.argv[3]
-    outdir       = sys.argv[4]
+    # Parse the arguments
+    args = parser.parse_args()
 
+    # Example usage of the verbose flag
+    if args.verbose:
+        print(f"mdp file: {args.mdpfile}")
+        print(f"dhdl.xvg file: {args.dhdl_xvgfile}")
+        print(f"Output Name: {args.outname}")
+        print(f"Output Directory: {args.outdir}")
+
+
+    # Access the arguments
+    mdpfile = args.mdpfile
+    dhdl_xvgfile = args.dhdl_xvgfile
+    outname = args.outname
+    outdir = args.outdir
+    verbose = args.verbose
+    optimize_K = args.optimize_K
+
+    # create the outdir if necessary
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     assert os.path.exists(outdir)
 
+
+
     # Optimize the lambdas
-    new_coul_lambdas, new_vdw_lambdas = optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, save_plots=True, verbose=False)
+    new_coul_lambdas, new_vdw_lambdas = optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K=optimize_K, verbose=verbose)
 
 
     # print out new coul_lambdas, vdw_lambdas to std output, formatted like an mdp file
@@ -201,6 +316,7 @@ if __name__ == '__main__':
     print()
 
 
+    # Write optimized values to *.npy files
     new_coul_npyfile = os.path.join(outdir, f'{outname}_new_coul_lambdas.npy')
     np.save(new_coul_npyfile, new_coul_lambdas)
     print(f'Wrote: {new_coul_npyfile}')
@@ -209,16 +325,12 @@ if __name__ == '__main__':
     np.save(new_vdw_npyfile, new_vdw_lambdas)
     print(f'Wrote: {new_vdw_npyfile}')
 
-    # write [outname]_ee_optimized.mdp to file, to run for 10 ns
-    from mdp_helpers import *
-    e = ExpandedPrep(ligand_only=True, couple_moltype = 'LIG',
-                     nsteps=5000000,  # 10000 ps = 10 ns simulation
-                     nstexpanded=250,  # 500 fs = 0.5 ps per swap and dhdl snapshot (20000 total energy snaps in the dhdl file)
-                     coul_lambdas=new_coul_lambdas, 
-                     vdw_lambdas=new_vdw_lambdas) 
+
+    # write [outname]_ee_optimized.mdp to file
     ee_mdpfile = os.path.join(outdir, f'{outname}_ee_optimized.mdp')
-    e.write_to_filename(ee_mdpfile)
+    write_optimized_coul_vdw_mdp(new_coul_lambdas, new_vdw_lambdas, mdpfile, ee_mdpfile)
     print(f'Wrote: {ee_mdpfile}')
+
 
 
 

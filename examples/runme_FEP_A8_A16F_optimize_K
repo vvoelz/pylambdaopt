@@ -1,0 +1,1 @@
+python ../scripts/optimize_FEP_lambdas.py --optimize_K FEP_A8_A16F_unopt/EE.mdp FEP_A8_A16F_unopt/dhdl_unopt_trial1.xvg opt FEP_A8_A16F_optimize_K
