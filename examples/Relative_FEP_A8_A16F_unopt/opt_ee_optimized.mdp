@@ -1,0 +1,164 @@
+
+; md_ee.mdp for expanded ensemble simulation
+
+; Run control
+define                   = -DPOSRES_backbone_atoms
+
+
+integrator               = md-vv    ; Can only use expanded ensemble with md-vv, NOT sd(Langevin dynamics)
+tinit                    = 0
+dt                       = 0.002    ; NOTE: default: 0.002ps (2fs) per time step
+nsteps                   = 20000000 ; 20 ns in total
+
+comm-mode                = None   ; this would be automatically set, if not defined here
+;nstcomm                  = 1        ; 1 step; this would be automatically set, if not defined here
+                                    ; make sure nstcomm equals to nstcalcenergy
+
+; Output control
+nstxout                  = 500000   ; save coordinates every 1 ns
+nstvout                  = 500000   ; save velocities every 1 ns
+
+nstlog                   = 5000     ; every 10 ps
+
+nstenergy                = 50000    ; save edr every 100 ps
+nstxout-compressed       = 50000    ; save xtc coordinates every 100 ps
+compressed-x-precision   = 1000     ; 1000 is default
+compressed-x-grps        = Protein  ; NOTE: 'xtc-grps' to 'compressed-x-grps' 
+; energygrps               = non-Water; It is only necessary in ie.mdp file
+
+; Neighborsearching and short-range nonbonded interactions
+cutoff-scheme            = verlet   ; NOTE: set default value
+nstlist                  = 10       ; default 10 steps; frequency to update the neighbor list
+ns_type                  = grid     ; Make a grid in the box and only check atoms in neighboring grid
+                                    ; cells when constructing a new neighbor list every nstlist steps
+pbc                      = xyz      ; use periodic boundary conditions in all directions.
+rlist                    = 0.9      ; NOTE: 0.9nm (default: 1nm) 
+                                    ; cut-off distance for the short-range neighbor list
+
+; Electrostatics
+coulombtype              = PME
+rcoulomb                 = 0.9      ; NOTE: 0.9nm (default: 1nm) the distance for the Coulomb cut-off
+
+; van der Waals
+vdwtype                  = Cut-off  ; Plain cut-off with pair list radius rlist and VdW cut-off rvdw , where rlist >= rvdw
+rvdw                     = 0.9      ; NOTE: 0.9nm (default: 1nm) the distance for the LJ or Buckingham cut-off
+; vdw-modifier
+; rvdw-switch
+
+; Apply long range dispersion corrections for Energy and Pressure
+DispCorr                 = EnerPres
+
+; Spacing for the PME/PPPM FFT grid
+fourierspacing           = 0.10     ; default: 0.12nm
+
+; EWALD/PME/PPPM parameters
+pme_order                = 4        ; Interpolation order for PME. 4 equals cubic interpolation.
+ewald_rtol               = 1e-06    ; default: 1e-05
+ewald_geometry           = 3d
+epsilon_surface          = 0
+
+; Temperature coupling
+; tcoupl is implicitly handled by the sd integrator, BUT in md-vv case, it is handled manually
+tcoupl                   = v-rescale ; it is better used in production process than berendsen
+nsttcouple               = 1        ; 1 step
+tc_grps                  = system
+tau_t                    = 0.5      ; time constant for coupling: 0.5ps
+ref_t                    = 300      ; reference temperature for coupling: 298K
+
+; Pressure coupling is on for NPT, but turn off in md-vv case
+Pcoupl                   = no       ; for md-vv and md-vv-avek, can only use Berendsen and MTTK equations for pressure control
+                                    ; MTTK(Martyna-Tuckerman-Tobias-Klein) is equivalent to Parrinello-Rahman
+                                    ; because constraints are not implemented with MTTK pressure control, so use NVT instead
+ ;tau_p                    = 0.5      ; time constant for coupling: 0.5ps
+ ;compressibility          = 4.5e-05  ; NOTE: default: 4.5e-05 NOTE: for water at 1atm and 300K, it is 4.5e-05/bar
+ ;ref_p                    = 1.0      ; reference pressure for coupling: 1bar
+
+; Free energy control stuff
+free-energy              = expanded  ; Turns on expanded ensemble simulation
+init_lambda_state        = 0        ; lambda index NOT lambda value
+calc_lambda_neighbors    = -1       
+                                    ; couple-moltype = Protein_chain_A <=== NOT for alchemical fep
+                                    ; couple-lambda0           = vdw-q
+                                    ; couple-lambda1           = vdw-q
+                                    ; couple-intramol          = no  
+sc-alpha 		= 0.5    ;     0.5 
+sc-power 		= 1      ;     keep this at 1 
+sc-sigma 	        = 0.3    ;     0.5
+    
+; Vectors of lambda specified here
+; Each combination is an index that is retrieved from init_lambda_state for each simulation
+
+;fep_lambda_states: all 45 lambda_states
+
+fep-lambdas         = 0.00000 0.05720 0.11743 0.19263 0.25085 0.29281 0.32774 0.35795 0.38520 0.41275 0.44418 0.48128 0.52511 0.56961 0.60765 0.64996 0.68836 0.73562 0.77617 0.81644 0.85272 0.89152 0.92506 0.95396 0.97962 1.00000
+; =========================================================================================================================
+
+; DO NOT set the below lambda values in alchemical fep
+
+; vdw_lambdas              = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+; coul_lambdas             = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+; We are not transforming any bonded or restrained interactions 
+; bonded_lambdas           = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+; restraint_lambdas        = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+; Masses are not changing (particle identities are the same at lambda = 0 and lambda = 1)
+; mass_lambdas             = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+; Not doing simulated temperting here
+; temperature_lambdas      = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00
+
+; DO NOT set the above lambda values in alchemical fep
+
+; =========================================================================================================================
+
+nstcalcenergy            = 1         ; nstcalcenergy equals to nstcomm 
+nstdhdl                  = 500       ; 500 steps x 0.002ps = 1ps     
+;nstdhdl                  = 5000      ; every 10 ps
+
+dhdl-print-energy        = total     ; Old option for dhdl-print-energy given: changing "yes" to "total"
+separate-dhdl-file       = yes
+
+; velocity generation
+gen_vel                  = no 
+;gen-temp                 = 300
+;gen-seed                 = -1 
+
+; options for bonds
+constraints              = h-bonds
+; Type of constraint algorithm
+constraint-algorithm     = lincs                 ; 
+; Constrain the starting configuration
+continuation             = yes      ; default: no
+; Highest order in the expansion of the constraint coupling matrix
+lincs-order              = 12      ; default: 4; for accurate energy minimization an order of 8 or more might be required
+lincs-iter               = 2       ; to conserve energy accurately in NVE, increase it from default: 1 to 2
+
+; Expanded Ensemble calculations
+nstexpanded              = 500                   ; 1ps; must be a multiple of nstcalcenergy
+lmc-stats                = wang-landau           ; "lmc" means lattice monte carlo
+                                                 ; uses the wang-landau algorithm to update the expanded ensemble weights
+
+lmc-move                 = metropolis            ; uses the conditional weights of the state given the coordinate to decide 
+                                                 ; which state to move to, then uses a rejection step to ensure detailed balance
+lmc-seed                 = -1                    ; random seed to use for Monte Carlo moves in state space
+wl-ratio                 = 0.7                   ; "wl" means wang-landau algorithm, default is 0.8
+;wl-scale                 = 0.8                   ; default is 0.8
+
+wl-scale                 = 0.5 
+
+init-wl-delta            = 10.0                  ; the initial value of the wang-landau incrementor in kT
+
+lmc-gibbsdelta           = -1                    ; limit Gibbs sampling to selected numbers of neighboring states
+                                                 ; a value of -1 means that all states are considered
+;nst-transition-matrix    = 250000                ; 500ps is the frequency of outputting the expanded ensemble transition matrix
+
+nst-transition-matrix = 500000                   ; 1ns
+
+symmetrized-transition-matrix = yes              ; default value is no
+; init-lambda-weights    =                       ; default is a vector of zero weights; length must match the lambda vector lengths in fep-lambdas
+                                                 ; the initial weights (free energies) used for the expanded ensemble states
+                                                 ; its length must match the lambda vector lengths, units are kT
+                                                 ; default is a vector of zero weights
+
+lmc-weights-equil        = wl-delta              ; expanded ensemble weight updating is stopped when the wang-landau incrementor 
+                                                 ; falls below this value specified by weight-equil-wl-delta
+weight-equil-wl-delta    = 0.00001               ; "equil" means equilibrium
+
