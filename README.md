@@ -6,7 +6,7 @@ Python scripts and module to optimize lambda values in FEP calculations
 * `biceps_xi_optimization`
 * `examples`
 * `figures` - an incomplete collection of figures generated for the manuscript
-* `scripts` - contains code and command-line tools to optimize alchemical intermediates
+* `scripts` - **contains code and command-line tools to optimize alchemical intermediates**
 * `toy_model` - code and scripts to performing EE sampling and analysis of the toy 1D harmonic potential system discussed in the manuscript.
 
 
