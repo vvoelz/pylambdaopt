@@ -292,7 +292,7 @@ if __name__ == '__main__':
 
 
     # Optimize the lambdas
-    new_coul_lambdas, new_vdw_lambdas = optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, make_plots=True, verbose=False)
+    new_coul_lambdas, new_vdw_lambdas = optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K=optimize_K, verbose=verbose)
 
 
     # print out new coul_lambdas, vdw_lambdas to std output, formatted like an mdp file
