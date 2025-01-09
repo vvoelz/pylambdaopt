@@ -1,6 +1,6 @@
 # pylambdaopt
 
-Python scripts and module to optimize lambda values in FEP calculations
+Python code and scripts to optimize lambda values in FEP calculations
 
 * `A16F_relative/`  - Simulation files for the A16F alchemical transformation of the A8 miniprotin.  Also contains results of unoptimized and optimized EE simulations that were analyzed in the manuscript.
 * `biceps_xi_optimization`
