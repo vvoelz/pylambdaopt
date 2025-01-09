@@ -124,8 +124,34 @@ def optimize_rest_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optim
         plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
 
 
-    # Optimize the \alpha_k values
-    new_alphas, traj_alphas = o.optimize_alphas(alpha_values)
+    ##### optimize the numnber of alchemical intermediates K,  if specified 
+    if optimize_K:
+
+        #### optimize K  based on the mixing times
+
+        optimal_K, K_values, P_acc_values, t2_values = o.optimize_K(alpha_values[0], alpha_values[-1], min_K=5, max_K=200)
+        print('optimal_K =', optimal_K)
+
+        # print('K_values', K_values)
+        # print('P_acc_values', P_acc_values)
+        # print('t2_values', t2_values)
+
+        if make_plots:
+            # make plots of the mixing time versus K 
+            if usePDF:
+                mixing_pdffile = os.path.join(outdir, f'{outname}_mixing.pdf')
+                plot_mixing(K_values, P_acc_values, t2_values, mixing_pdffile)
+            else:
+                mixing_pngfile = os.path.join(outdir, f'{outname}_mixing.png')
+                plot_mixing(K_values, P_acc_values, t2_values, mixing_pngfile)
+
+        # Based on the optimal K, Optimize a new set of  \alpha_k values, k=1,...K
+        adjusted_alpha_values = np.linspace(alpha_values[0], alpha_values[-1], optimal_K)
+        new_alphas, traj_alphas = o.optimize_alphas(adjusted_alpha_values)
+
+    else:
+        # Optimize the \alpha_k values (without changing their number)
+        new_alphas, traj_alphas = o.optimize_alphas(alpha_values)
 
    
     if make_plots:     
