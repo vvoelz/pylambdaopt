@@ -116,9 +116,12 @@ def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K
 
     if make_plots:
         # make plots of the spline
-        spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png') 
-        spline_pdffile = os.path.join(outdir, f'{outname}_splinefit.pdf')
-        plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
+        if usePDF:
+            spline_pdffile = os.path.join(outdir, f'{outname}_splinefit.pdf')
+            plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pdffile)
+        else:
+            spline_pngfile = os.path.join(outdir, f'{outname}_splinefit.png')
+            plot_spline(alpha_values, L_values, o.L_spl, o.L_spl_1d, spline_pngfile)
 
 
     ##### optimize the numnber of alchemical intermediates K,  if specified 
@@ -153,16 +156,22 @@ def optimize_coul_vdw_lambdas(mdpfile, dhdl_xvgfile, outname, outdir, optimize_K
    
     if make_plots:     
         # make plots of the optimization traces
-        traces_pngfile = os.path.join(outdir, f'{outname}_opt_traces.png')
-        traces_pdffile = os.path.join(outdir, f'{outname}_opt_traces.pdf')
-        plot_opt_traces(traj_alphas, o.L_spl, traces_pdffile)
+        if usePDF:
+            traces_pdffile = os.path.join(outdir, f'{outname}_opt_traces.pdf')
+            plot_opt_traces(traj_alphas, o.L_spl, traces_pdffile)
+        else:
+            traces_pngfile = os.path.join(outdir, f'{outname}_opt_traces.png')
+            plot_opt_traces(traj_alphas, o.L_spl, traces_pngfile)
 
     
     if make_plots:
         # make plots of old versus new alphas
-        old_new_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.png')
-        old_new_pdffile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.pdf')
-        plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pdffile)
+        if usePDF:
+            old_new_pdffile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.pdf')
+            plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pdffile)
+        else:
+            old_new_pngfile = os.path.join(outdir, f'{outname}_old_vs_new_alphas.png')
+            plot_old_vs_new_alphas(alpha_values, new_alphas, o.L_spl, old_new_pngfile)
 
 
     # create a path function $\phi(\alpha) \rightarrow \vec{\lambda} to map the alphas back to lambdas
