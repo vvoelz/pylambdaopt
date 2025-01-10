@@ -13,7 +13,10 @@ Python code and scripts to optimize lambda values in FEP calculations
 ### Citation
 
 ```
-Dylan Novack, Robert M. Raddi, Si Zhang, Matthew F.D. Hurley, Vincent A. Voelz
-A simple method for optimizing the spacing and number of alchemical intermediates in expanded ensemble free energy calculations
-Submitted, 2025
+@article{Novack2025pylambdaopt,
+  title={A simple method for optimizing the spacing and number of alchemical intermediates in expanded ensemble free energy calculations},
+  author={Novack, Dylan and Raddi, Robert M and Zhang, Si and Hurley, Matthew F.D. and Voelz, Vincent A},
+  journal={in preparation},
+  year={2025}
+}
 ```
