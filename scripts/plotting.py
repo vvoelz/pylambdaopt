@@ -76,7 +76,7 @@ def plot_opt_traces(traj_alphas, L_spl, filename):
     print(f'Wrote: {filename}')
 
 
-def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename):
+def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename, unopt_color='k', opt_color='g'):
     """makes a two panel plot of thee old and new alpha values marked at
     locations on the L(alpha) vs alpha plot."""
 
@@ -90,7 +90,7 @@ def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename):
         plt.plot(alpha_range, L_spl(alpha_range), 'b-', label="spline")
         plt.plot(old_alphas, L_spl(np.array(old_alphas)), 'r.', label="old alphas")
         for value in old_alphas:
-            plt.plot([value, value], [0, L_spl(value)], 'r-')
+            plt.plot([value, value], [0, L_spl(value)], f'{unopt_color}-')
         plt.legend()
         plt.xlabel(r'$\alpha$')
         plt.ylabel(r'$\mathcal{L}(\alpha)$')
@@ -102,7 +102,7 @@ def plot_old_vs_new_alphas(old_alphas, new_alphas, L_spl, filename):
         plt.plot(alpha_range, L_spl(alpha_range), 'b-', label="spline")
         plt.plot(new_alphas, L_spl(new_alphas), 'g.', label="new alphas")
         for value in new_alphas:
-            plt.plot([value, value], [0, L_spl(value)], 'g-')
+            plt.plot([value, value], [0, L_spl(value)], f'{opt_color}-')
         plt.legend()
         plt.xlabel(r'$\alpha$')
         plt.ylabel(r'$\mathcal{L}(\alpha)$')
