@@ -1,0 +1,8 @@
+## This set the hrex_path as None
+
+python ../scripts/optimize_FEP_lambdas_hrex.py \
+    peptoid_hrex/prod_fep.mdp \
+    opt \
+    peptoid_hrex \
+    --dhdl_xvgfile_path peptoid_hrex/dhdl_files \
+    --verbose
