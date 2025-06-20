@@ -9,14 +9,16 @@ Python code and scripts to optimize lambda values in FEP calculations
 * `scripts` - **code and command-line tools to optimize alchemical intermediates**
 * `toy_model` - code and scripts to performing EE sampling and analysis of the toy 1D harmonic potential system discussed in the manuscript.
 
+The paper can be read here---> https://doi.org/10.1021/acs.jcim.5c00704
 
 ### Citation
 
 ```
-@article{Novack2025pylambdaopt,
-  title={A simple method for optimizing the spacing and number of alchemical intermediates in expanded ensemble free energy calculations},
-  author={Novack, Dylan and Raddi, Robert M and Zhang, Si and Hurley, Matthew F.D. and Voelz, Vincent A},
-  journal={in preparation},
-  year={2025}
+@article{novack2025simple,
+  title={Simple Method to Optimize the Spacing and Number of Alchemical Intermediates in Expanded Ensemble Free Energy Calculations},
+  author={Novack, Dylan and Raddi, Robert M and Zhang, Si and Hurley, Matthew FD and Voelz, Vincent A},
+  journal={Journal of Chemical Information and Modeling},
+  year={2025},
+  publisher={ACS Publications}
 }
 ```
