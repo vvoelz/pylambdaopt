@@ -9,7 +9,7 @@ Python code and scripts to optimize lambda values in FEP calculations
 * `scripts` - **code and command-line tools to optimize alchemical intermediates**
 * `toy_model` - code and scripts to performing EE sampling and analysis of the toy 1D harmonic potential system discussed in the manuscript.
 
-The paper can be read here---> https://doi.org/10.1021/acs.jcim.5c00704
+The paper can be read here ---> https://doi.org/10.1021/acs.jcim.5c00704
 
 ### Citation
 
